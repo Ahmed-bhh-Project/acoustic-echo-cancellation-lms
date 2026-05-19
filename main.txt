@@ -1,0 +1,37 @@
+
+P = 150;
+mu = 0.01;
+
+[y_farspeech, Fs_farspeech] = audioread('s1.wav');
+%sound(y_farspeech, Fs_farspeech);
+
+[y_nearspeech, Fs_nearspeech] = audioread('s2.wav');
+%sound(y_nearspeech, Fs_nearspeech);
+
+% On filtre le signal éloigné avec la réponse impulsionnelle
+Rep = importdata('Rep.dat');
+
+filtered_farspeech_signal = filter(Rep, 1, y_farspeech);
+%sound(filtered_farspeech_signal, Fs_farspeech);
+
+dialogue_filtered = y_nearspeech(1:length(filtered_farspeech_signal)) + filtered_farspeech_signal(1:length(filtered_farspeech_signal));
+%sound(dialogue_filtered, Fs_farspeech);
+
+% Appliquer l'algorithme LMS 
+[w, y_cleaned, e] = algolms(y_nearspeech, dialogue_filtered, 300, 0.001); 
+sound(y_cleaned*5, Fs_nearspeech); 
+
+% Comparer le signal original et le signal après annulation d'écho 
+figure; 
+subplot(3, 1, 1); 
+plot(y_nearspeech); 
+title('Signal proche'); 
+xlabel('Échantillons'); 
+ylabel('Amplitude'); 
+
+subplot(3, 1, 2); 
+plot(y_cleaned); 
+title('Signal après annulation du signal loin avec echo'); 
+xlabel('Échantillons'); 
+ylabel('Amplitude');
+
